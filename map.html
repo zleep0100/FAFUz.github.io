@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArcGIS Map with Layout</title>
+    <style>
+        html,
+        body {
+            padding: 0;
+            margin: 0;
+            height: 100%;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        #header {
+            height: 45px;
+            background-color: #557889;
+            color: white;
+            text-align: center;
+            line-height: 0.5; 
+        }
+        #map-container {
+            flex: 1;
+            position: relative;
+        }
+        #basemap-gallery-container {
+            height: 150px;
+            background-color: white;
+            border-top: 1px solid #ccc;
+            padding: 5px;
+            z-index: 1;
+        }
+        arcgis-map {
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+    <!-- Load Calcite components from CDN -->
+    <script type="module" src="https://js.arcgis.com/calcite-components/3.0.3/calcite.esm.js"></script>
+    <!-- Load the ArcGIS Maps SDK for JavaScript from CDN -->
+    <link rel="stylesheet" href="https://js.arcgis.com/4.32/esri/themes/light/main.css" />
+    <script src="https://js.arcgis.com/4.32/"></script>
+    <!-- Load Map components from CDN-->
+    <script type="module" src="https://js.arcgis.com/map-components/4.32/arcgis-map-components.esm.js"></script>
+</head>
+<body>
+    <div id="header">
+        <h2>粤港澳</h2>
+    </div>
+    <div id="map-container">
+        <arcgis-map item-id="237b9584339446a0b56317b5962a4971" center="114.5, 20.7" zoom="6">
+            <arcgis-layer-list position="top-right"></arcgis-layer-list>
+            <arcgis-zoom position="top-left"></arcgis-zoom>
+            <arcgis-legend position="bottom-right"></arcgis-legend>
+        </arcgis-map>
+    </div>
+    <div id="basemap-gallery-container">
+        <div id="basemapGallery"></div>
+    </div>
+</body>
+</html>
+<script>
+    require(["esri/layers/FeatureLayer", "esri/widgets/ScaleBar", "esri/widgets/Search", "esri/widgets/BasemapGallery"], 
+    function(FeatureLayer, ScaleBar, Search, BasemapGallery)  {
+        const arcgisMap = document.querySelector("arcgis-map");
+        arcgisMap.addEventListener("arcgisViewReadyChange", () => {
+            // Trailheads feature layer (points)
+            const trailheadsLayer = new FeatureLayer({
+                url: "https://www.geosceneonline.cn/server/rest/services/Hosted/粤港澳_WFL1/FeatureServer/0"
+            });
+            arcgisMap.map.add(trailheadsLayer);
+            // Trails feature layer (lines)
+            const trailsLayer = new FeatureLayer({
+                url: "https://www.geosceneonline.cn/server/rest/services/Hosted/粤港澳_WFL1/FeatureServer/1"
+            });
+            arcgisMap.map.add(trailsLayer, 0);
+            // 添加比例尺
+            const scaleBar = new ScaleBar({
+                view: arcgisMap.view,
+                unit: "dual",
+                style: "ruler",
+                position: "bottom-left"
+            });
+            arcgisMap.view.ui.add(scaleBar, "bottom-left");
+            // 添加搜索框
+            const searchWidget = new Search({
+                view: arcgisMap.view
+            });
+            arcgisMap.view.ui.add(searchWidget, {
+                position: "top-left",
+                index: 0
+            });
+            // 添加底图库
+            const basemapGallery = new BasemapGallery({
+                view: arcgisMap.view,
+                container: "basemapGallery"
+            });
+        });
+        // Get a reference to the arcgis-layer-list element
+        const arcgisLayerList = document.querySelector("arcgis-layer-list");
+        arcgisLayerList.listItemCreatedFunction = (event) => {
+            const { item } = event;
+            if (item.layer.type!== "group") {
+                item.panel = {
+                    content: "legend"
+                };
+            }
+        };
+    });
+</script>
+    
